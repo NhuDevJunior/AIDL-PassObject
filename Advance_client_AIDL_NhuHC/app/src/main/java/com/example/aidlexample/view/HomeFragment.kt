@@ -15,6 +15,7 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.view.isVisible
 import com.example.aidlexample.IMyAidlInterface
 import com.example.aidlexample.R
 import com.example.aidlexample.databinding.FragmentHomeBinding
@@ -26,6 +27,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(),View.OnClickListener {
     private val ACTION_BIND_SERVICE = "aidlexample"
     private var iMyAidlInterface: IMyAidlInterface? = null
     private val TAG = "NhuHC"
+    private var connected = false
     override fun createBinding(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -36,17 +38,18 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(),View.OnClickListener {
 
     override fun initAction() {
         super.initAction()
-        binding.btnBasic.setOnClickListener(this)
         binding.btnBind.setOnClickListener(this)
-        binding.btnEntity.setOnClickListener(this)
-        binding.btnListener.setOnClickListener(this)
-        binding.btnUnbind.setOnClickListener(this)
-        binding.btnModel.setOnClickListener(this)
+        binding.search.setOnClickListener(this)
+        binding.fabAdd.setOnClickListener(this)
     }
     private val listener: IResultListener = object : IResultListener.Stub() {
+        @SuppressLint("SetTextI18n")
         @Throws(RemoteException::class)
         override fun onResult(msgResult:String,responseStudent: Student) {
-            binding.tvResult.setText("result msg==" + responseStudent.nameStudent)
+            binding.tvResult.text = " name:" + responseStudent.nameStudent+
+                    "\n grade: ${responseStudent.gradeStudent}"+"\n math: ${responseStudent.math}"+
+                    "\n physic: ${responseStudent.physic}"+"\n chemistry: ${responseStudent.chemistry}"+
+                    "\n english: ${responseStudent.english}"+"\n literature: ${responseStudent.literature}"
             Log.i("NhuHC","msgResult ${responseStudent.nameStudent}")
         }
     }
@@ -56,7 +59,6 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(),View.OnClickListener {
         implicitBind();
     }
 
-    //显示绑定
     private fun explicitBind() {
         Log.i("NhuHC","explicitBind")
         // do something about connected remote service
@@ -71,10 +73,8 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(),View.OnClickListener {
     }
 
 
-    //隐式绑定(隐式转显示)
     private fun implicitBind() {
         val intent = Intent()
-        //利用intent中的Action区分查找要绑定服务
         intent.action = ACTION_BIND_SERVICE
         val explicitIntent = Intent(createExplicitFromImplicitIntent(requireContext(), intent))
         requireContext().bindService(explicitIntent, mConnection, BIND_AUTO_CREATE)
@@ -83,20 +83,20 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(),View.OnClickListener {
 
     private val mConnection: ServiceConnection = object : ServiceConnection {
         override fun onServiceConnected(name: ComponentName, service: IBinder) {
-            //必须使用IService中的静态方法转换，不能强转
             iMyAidlInterface = IMyAidlInterface.Stub.asInterface(service)
-            binding.tvResult.setText("onServiceConnected:$name")
             Log.i("NhuHC","success")
+            connected = true
         }
 
         override fun onServiceDisconnected(name: ComponentName) {
             Log.i("NhuHC","fail")
+            connected = false
         }
     }
 
     /**
      * createExplicitFromImplicitIntent
-     * 根据acton找到对应包名
+     *
      *
      * @param context
      * @param implicitIntent
@@ -107,7 +107,6 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(),View.OnClickListener {
         // Retrieve all services that can match the given intent
         val pm: PackageManager = context.packageManager
         val resolveInfo = pm.queryIntentServices(implicitIntent!!, 0)
-        Log.i("TTT", """resolveInfo=$resolveInfo resolveInfo.size()=${resolveInfo.size}""")
         // Make sure only one match was found
         if (resolveInfo == null || resolveInfo.size != 1) {
             return Intent()
@@ -127,16 +126,20 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(),View.OnClickListener {
     }
     override fun onClick(p0: View) {
         when(p0.id){
-            R.id.btn_bind ->  bindRemoteService()
-            R.id.btn_unbind -> requireContext().unbindService(mConnection)
-            R.id.btn_basic -> {
-                try {
-                    iMyAidlInterface!!.basicTypes(777, 22L, true, 2f, 2.1, "hi,this is client")
-                } catch (e: RemoteException) {
-                    e.printStackTrace()
+            R.id.btn_bind ->  {
+                if(connected){
+                    requireContext().unbindService(mConnection)
+                    binding.btnBind.text = "connect"
+                    connected = false
+                    binding.containerManagement.isVisible = false
+                }else{
+                    bindRemoteService()
+                    binding.btnBind.text = "disconnect"
+                    binding.containerManagement.isVisible = true
                 }
+
             }
-            R.id.btn_entity -> {
+            R.id.search -> {
                 val entity = Student()
                 entity.idStudent = 1006
                 entity.nameStudent = "SangHN"
@@ -147,25 +150,21 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(),View.OnClickListener {
                 entity.literature = 1f
                 entity.english = 0f
                 val requestCode = 0
+                // send data
                 try {
                     iMyAidlInterface!!.objectTypes(requestCode,entity)
                 } catch (e: RemoteException) {
                     e.printStackTrace()
                 }
-            }
-            R.id.btn_listener -> {
+                // call back data
                 try {
                     iMyAidlInterface!!.callbackTypes(listener)
                 } catch (e: RemoteException) {
                     e.printStackTrace()
                 }
             }
-            R.id.btn_model -> {
-                try {
-                    Log.d(TAG, "onViewClicked:model= " + iMyAidlInterface!!.model)
-                } catch (e: RemoteException) {
-                    e.printStackTrace()
-                }
+            R.id.fabAdd ->{
+                AddStudentDialog().show(requireFragmentManager(),"Nhu")
             }
         }
     }
