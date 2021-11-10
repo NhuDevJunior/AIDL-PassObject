@@ -1,7 +1,7 @@
 // IMyAidlInterface.aidl
 package com.example.aidlexample;
-import com.example.aidlexample.entity.RequestEntity;
-import com.example.aidlexample.entity.ResponseEntity;
+import com.example.aidlexample.model.Student;
+import com.example.aidlexample.model.Student;
 import com.example.aidlexample.listener.IResultListener;
 // Declare any non-default types here with import statements
 
@@ -10,7 +10,7 @@ interface IMyAidlInterface {
     void basicTypes(int anInt, long aLong, boolean aBoolean, float aFloat,
             double aDouble, String aString);
     //object 对象
-    void objectTypes(in RequestEntity requestEntity);
+    void objectTypes(in int requestCode,in Student student);
     //callback 回调
     void callbackTypes(IResultListener listener);
 

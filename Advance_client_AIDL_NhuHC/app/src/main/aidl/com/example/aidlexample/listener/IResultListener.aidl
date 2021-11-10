@@ -2,7 +2,7 @@
 package com.example.aidlexample.listener;
 
 // Declare any non-default types here with import statements
-import com.example.aidlexample.entity.ResponseEntity;
+import com.example.aidlexample.model.Student;
 interface IResultListener {
-    void onResult(inout ResponseEntity responseEntity );
+    void onResult(in String msgResult,inout Student student );
 }

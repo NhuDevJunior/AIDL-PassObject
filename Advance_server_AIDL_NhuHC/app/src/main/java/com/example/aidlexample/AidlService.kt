@@ -6,12 +6,13 @@ import android.os.Build
 import android.os.IBinder
 import android.os.RemoteException
 import android.util.Log
-import com.example.aidlexample.entity.RequestEntity
-import com.example.aidlexample.entity.ResponseEntity
+import com.example.aidlexample.model.Student
 import com.example.aidlexample.listener.IResultListener
+import com.example.aidlexample.model.Pupil
 
 
 class AidlService : Service() {
+    private var pupil:Pupil?=null
     override fun onBind(intent: Intent): IBinder? {
         Log.d(TAG, "onBind====")
         return MyBinder()
@@ -46,16 +47,32 @@ class AidlService : Service() {
         }
 
         @Throws(RemoteException::class)
-        override fun objectTypes(requestEntity: RequestEntity) {
-            Log.d(TAG, "objectTypes:requestEntity.getRequestMsg=== " + requestEntity.requestMsg)
+        override fun objectTypes(requestCode:Int,requestEntity: Student) {
+            Log.d(TAG, "name student request is === " + requestEntity.nameStudent)
+            Log.d(TAG, "request code $requestCode")
+            requestEntity.apply {
+            pupil = nameStudent?.let {
+                gradeStudent?.let { it1 ->
+                    Pupil(idStudent,
+                        it, it1,math,physic,chemistry,english,literature)
+                }
+            }
+            }
         }
 
         @Throws(RemoteException::class)
         override fun callbackTypes(listener: IResultListener) {
-            val entity = ResponseEntity()
-            entity.resultCode = 0
-            entity.resultMsg = "Result OK"
-            listener.onResult(entity)
+            val entity = Student()
+            entity.idStudent = pupil?.idPupil?:0L
+            entity.nameStudent = pupil?.namePupil
+            entity.gradeStudent = pupil?.gradePupil
+            entity.math = pupil?.math?:0f
+            entity.physic = pupil?.physic?:0f
+            entity.chemistry = pupil?.chemistry?:0f
+            entity.literature = pupil?.literature?:0f
+            entity.english = pupil?.english?:0f
+            val msgResult = "Nhu"
+            listener.onResult(msgResult,entity)
         }
 
         override fun getModel(): String {

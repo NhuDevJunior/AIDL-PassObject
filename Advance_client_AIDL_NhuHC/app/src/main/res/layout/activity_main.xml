@@ -1,49 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
     tools:context=".MainActivity">
-    <Button
-        android:id="@+id/btn_bind"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="bind service" />
 
-    <Button
-        android:id="@+id/btn_unbind"
+    <androidx.fragment.app.FragmentContainerView
+        android:id="@+id/fragmentContainerView"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="unbind service" />
-    <Button
-        android:id="@+id/btn_basic"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="basic type 基础类型" />
+        android:layout_height="match_parent"
+        android:name="androidx.navigation.fragment.NavHostFragment"
+        app:defaultNavHost="true"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:navGraph="@navigation/nav_graph" />
 
-    <Button
-        android:id="@+id/btn_entity"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="entity 实体类" />
-
-    <Button
-        android:id="@+id/btn_listener"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="listener 回调" />
-
-    <Button
-        android:id="@+id/btn_model"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="get model" />
-
-    <TextView
-        android:id="@+id/tv_result"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
-
-</LinearLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>
