@@ -1,0 +1,2 @@
+rootProject.name = "Advance_client_AIDL_NhuHC"
+include ':app'
