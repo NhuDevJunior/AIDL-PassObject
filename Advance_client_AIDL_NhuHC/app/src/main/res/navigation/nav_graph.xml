@@ -9,14 +9,5 @@
         android:id="@+id/homeFragment"
         android:name="com.example.aidlexample.view.HomeFragment"
         android:label="fragment_home"
-        tools:layout="@layout/fragment_home" >
-        <action
-            android:id="@+id/action_homeFragment_to_updateStudentFragment"
-            app:destination="@id/updateStudentFragment" />
-    </fragment>
-    <fragment
-        android:id="@+id/updateStudentFragment"
-        android:name="com.example.aidlexample.view.UpdateStudentFragment"
-        android:label="fragment_update_student"
-        tools:layout="@layout/fragment_update_student" />
+        tools:layout="@layout/fragment_home" />
 </navigation>

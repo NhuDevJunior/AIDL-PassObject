@@ -15,12 +15,21 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.core.view.isVisible
+import androidx.fragment.app.activityViewModels
+import androidx.navigation.Navigation
 import com.example.aidlexample.IMyAidlInterface
 import com.example.aidlexample.R
 import com.example.aidlexample.databinding.FragmentHomeBinding
 import com.example.aidlexample.listener.IResultListener
 import com.example.aidlexample.model.Student
+import com.example.aidlexample.utils.Constant.ACTION_ADD
+import com.example.aidlexample.utils.Constant.ACTION_NORMAL
+import com.example.aidlexample.utils.Constant.ACTION_SEARCH
+import com.example.aidlexample.utils.Constant.ACTION_UPDATE
+import com.example.aidlexample.utils.Constant.SUCCESS_ADD
+import com.example.aidlexample.viewmodel.MyViewModel
 
 
 class HomeFragment : BaseFragment<FragmentHomeBinding>(),View.OnClickListener {
@@ -28,6 +37,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(),View.OnClickListener {
     private var iMyAidlInterface: IMyAidlInterface? = null
     private val TAG = "NhuHC"
     private var connected = false
+    private val myViewModel: MyViewModel by activityViewModels()
     override fun createBinding(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -41,17 +51,24 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(),View.OnClickListener {
         binding.btnBind.setOnClickListener(this)
         binding.search.setOnClickListener(this)
         binding.fabAdd.setOnClickListener(this)
+        binding.tvResult.setOnClickListener(this)
     }
     private val listener: IResultListener = object : IResultListener.Stub() {
-        @SuppressLint("SetTextI18n")
         @Throws(RemoteException::class)
         override fun onResult(msgResult:String,responseStudent: Student) {
-            binding.tvResult.text = " name:" + responseStudent.nameStudent+
-                    "\n grade: ${responseStudent.gradeStudent}"+"\n math: ${responseStudent.math}"+
-                    "\n physic: ${responseStudent.physic}"+"\n chemistry: ${responseStudent.chemistry}"+
-                    "\n english: ${responseStudent.english}"+"\n literature: ${responseStudent.literature}"
-            Log.i("NhuHC","msgResult ${responseStudent.nameStudent}")
+            if(msgResult == SUCCESS_ADD) {
+                myViewModel.setDisplayStudent(responseStudent)
+                Log.i("NhuHC", "msgResult ${responseStudent.nameStudent}")
+                Toast.makeText(requireContext(), "Success", Toast.LENGTH_LONG).show()
+            }
         }
+    }
+    @SuppressLint("SetTextI18n")
+    fun setTextVResult(responseStudent: Student){
+        binding.tvResult.text = " name:" + responseStudent.nameStudent+
+                "\n grade: ${responseStudent.gradeStudent}"+"\n math: ${responseStudent.math}"+
+                "\n physic: ${responseStudent.physic}"+"\n chemistry: ${responseStudent.chemistry}"+
+                "\n english: ${responseStudent.english}"+"\n literature: ${responseStudent.literature}"
     }
 
     private fun bindRemoteService() {
@@ -149,23 +166,60 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(),View.OnClickListener {
                 entity.chemistry = 2f
                 entity.literature = 1f
                 entity.english = 0f
-                val requestCode = 0
-                // send data
-                try {
-                    iMyAidlInterface!!.objectTypes(requestCode,entity)
-                } catch (e: RemoteException) {
-                    e.printStackTrace()
-                }
-                // call back data
-                try {
-                    iMyAidlInterface!!.callbackTypes(listener)
-                } catch (e: RemoteException) {
-                    e.printStackTrace()
-                }
+                val pair = Pair(ACTION_SEARCH,entity)
+                myViewModel.setStudentMeta(pair)
             }
             R.id.fabAdd ->{
                 AddStudentDialog().show(requireFragmentManager(),"Nhu")
             }
+            R.id.tv_result ->{
+                UpdateStudentDialog().show(requireFragmentManager(),"Nhu")
+            }
         }
+    }
+
+    override fun observeLiveData() {
+        super.observeLiveData()
+        myViewModel.observerStudent.observe(viewLifecycleOwner,{
+            when(it.first){
+                ACTION_SEARCH ->{
+                    // send data
+                    try {
+                        iMyAidlInterface!!.objectTypes(ACTION_SEARCH,it.second)
+                    } catch (e: RemoteException) {
+                        e.printStackTrace()
+                    }
+                    // call back data
+                    try {
+                        iMyAidlInterface!!.callbackTypes(listener)
+                    } catch (e: RemoteException) {
+                        e.printStackTrace()
+                    }
+                }
+                ACTION_ADD ->{
+                    // send data
+                    try {
+                        iMyAidlInterface!!.objectTypes(ACTION_ADD,it.second)
+                    } catch (e: RemoteException) {
+                        e.printStackTrace()
+                    }
+                    // call back data
+                    try {
+                        iMyAidlInterface!!.callbackTypes(listener)
+                    } catch (e: RemoteException) {
+                        e.printStackTrace()
+                    }
+                }
+                ACTION_UPDATE ->{
+
+                }
+                ACTION_NORMAL ->{
+
+                }
+            }
+        })
+        myViewModel.observerDisplayStudent.observe(viewLifecycleOwner,{ displayStudent ->
+                setTextVResult(displayStudent)
+        })
     }
 }

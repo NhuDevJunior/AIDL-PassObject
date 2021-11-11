@@ -9,10 +9,18 @@ import android.util.Log
 import com.example.aidlexample.model.Student
 import com.example.aidlexample.listener.IResultListener
 import com.example.aidlexample.model.Pupil
+import com.example.aidlexample.repo.Repository
+import com.example.aidlexample.utils.Constant.ACTION_ADD
+import com.example.aidlexample.utils.Constant.ERROR_ADD
+import com.example.aidlexample.utils.Constant.SUCCESS_ADD
+import kotlinx.coroutines.*
 
 
 class AidlService : Service() {
     private var pupil:Pupil?=null
+    private var coroutineScope = CoroutineScope(Dispatchers.Main+ Job())
+    private var job: Job? =null
+    var result:Long?=null
     override fun onBind(intent: Intent): IBinder? {
         Log.d(TAG, "onBind====")
         return MyBinder()
@@ -30,6 +38,8 @@ class AidlService : Service() {
 
     override fun onDestroy() {
         Log.d(TAG, "onDestroy====")
+        job?.cancel()
+        coroutineScope.cancel()
         super.onDestroy()
     }
 
@@ -53,10 +63,15 @@ class AidlService : Service() {
             requestEntity.apply {
             pupil = nameStudent?.let {
                 gradeStudent?.let { it1 ->
-                    Pupil(idStudent,
+                    Pupil(null,
                         it, it1,math,physic,chemistry,english,literature)
                 }
             }
+            }
+            if(requestCode==ACTION_ADD) {
+                job = coroutineScope.launch {
+                    result = pupil?.let { Repository.addPupil(it) }
+                }
             }
         }
 
@@ -71,7 +86,12 @@ class AidlService : Service() {
             entity.chemistry = pupil?.chemistry?:0f
             entity.literature = pupil?.literature?:0f
             entity.english = pupil?.english?:0f
-            val msgResult = "Nhu"
+            var msgResult = ""
+            msgResult = if(result==-1L){
+                ERROR_ADD
+            } else {
+                SUCCESS_ADD
+            }
             listener.onResult(msgResult,entity)
         }
 
@@ -85,5 +105,6 @@ class AidlService : Service() {
     companion object {
         private const val TAG = "AidlService"
     }
+
 }
 
