@@ -28,7 +28,10 @@ import com.example.aidlexample.utils.Constant.ACTION_ADD
 import com.example.aidlexample.utils.Constant.ACTION_NORMAL
 import com.example.aidlexample.utils.Constant.ACTION_SEARCH
 import com.example.aidlexample.utils.Constant.ACTION_UPDATE
+import com.example.aidlexample.utils.Constant.ERROR_SEARCH
 import com.example.aidlexample.utils.Constant.SUCCESS_ADD
+import com.example.aidlexample.utils.Constant.SUCCESS_SEARCH
+import com.example.aidlexample.utils.Constant.SUCCESS_UPDATE
 import com.example.aidlexample.viewmodel.MyViewModel
 
 
@@ -56,10 +59,24 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(),View.OnClickListener {
     private val listener: IResultListener = object : IResultListener.Stub() {
         @Throws(RemoteException::class)
         override fun onResult(msgResult:String,responseStudent: Student) {
-            if(msgResult == SUCCESS_ADD) {
-                myViewModel.setDisplayStudent(responseStudent)
-                Log.i("NhuHC", "msgResult ${responseStudent.nameStudent}")
-                Toast.makeText(requireContext(), "Success", Toast.LENGTH_LONG).show()
+            when (msgResult) {
+                SUCCESS_ADD -> {
+//                    myViewModel.setDisplayStudent(responseStudent)
+                    Log.i("NhuHC", "msgResult ${responseStudent.nameStudent}")
+                    Toast.makeText(requireContext(), "Success", Toast.LENGTH_LONG).show()
+                }
+                SUCCESS_SEARCH -> {
+                    Log.i("NhuHC", "msgResult search is ${responseStudent.nameStudent}")
+                    myViewModel.setDisplayStudent(responseStudent)
+                }
+                ERROR_SEARCH -> {
+                    binding.tvResult.text = "Not found"
+                }
+                SUCCESS_UPDATE ->{
+                    Log.i("NhuHC", "msgResult update ${responseStudent.nameStudent}")
+                    Toast.makeText(requireContext(), "Update Success", Toast.LENGTH_LONG).show()
+                    myViewModel.setDisplayStudent(responseStudent)
+                }
             }
         }
     }
@@ -68,7 +85,8 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(),View.OnClickListener {
         binding.tvResult.text = " name:" + responseStudent.nameStudent+
                 "\n grade: ${responseStudent.gradeStudent}"+"\n math: ${responseStudent.math}"+
                 "\n physic: ${responseStudent.physic}"+"\n chemistry: ${responseStudent.chemistry}"+
-                "\n english: ${responseStudent.english}"+"\n literature: ${responseStudent.literature}"
+                "\n english: ${responseStudent.english}"+"\n literature: ${responseStudent.literature}" +
+                "\n click to update"
     }
 
     private fun bindRemoteService() {
@@ -157,9 +175,10 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(),View.OnClickListener {
 
             }
             R.id.search -> {
+                Log.i("NhuHC","search")
                 val entity = Student()
                 entity.idStudent = 1006
-                entity.nameStudent = "SangHN"
+                entity.nameStudent = binding.yourName.text.toString()
                 entity.gradeStudent = "8A4"
                 entity.math = 4f
                 entity.physic = 3f
@@ -211,7 +230,18 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(),View.OnClickListener {
                     }
                 }
                 ACTION_UPDATE ->{
-
+                    // send data
+                    try {
+                        iMyAidlInterface!!.objectTypes(ACTION_UPDATE,it.second)
+                    } catch (e: RemoteException) {
+                        e.printStackTrace()
+                    }
+                    // call back data
+                    try {
+                        iMyAidlInterface!!.callbackTypes(listener)
+                    } catch (e: RemoteException) {
+                        e.printStackTrace()
+                    }
                 }
                 ACTION_NORMAL ->{
 

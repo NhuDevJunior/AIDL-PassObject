@@ -16,4 +16,14 @@ object Repository {
             return@withContext pupilDAO.insertPupil(inputPupil)
         }
     }
+    suspend fun searchPupil(name:String):List<Pupil>{
+        return withContext(ioDispatcher){
+            return@withContext pupilDAO.findPupil(name)
+        }
+    }
+    suspend fun updatePupil(inputPupil: Pupil):Int{
+        return withContext(ioDispatcher){
+            return@withContext pupilDAO.updatePupil(inputPupil)
+        }
+    }
 }

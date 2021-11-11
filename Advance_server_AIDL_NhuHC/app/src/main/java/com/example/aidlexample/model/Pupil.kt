@@ -10,7 +10,7 @@ import kotlinx.android.parcel.Parcelize
 @Entity(tableName = "pupil_table")
 data class Pupil(    @PrimaryKey(autoGenerate = true)
                      @ColumnInfo(name = "idPupil")
-                     val idPupil: Long?=0,
+                     var idPupil: Long?=0,
                      @ColumnInfo(name = "namePupil")
                      val namePupil:String,
                      @ColumnInfo(name = "gradePupil")

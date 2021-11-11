@@ -9,7 +9,7 @@ import com.example.aidlexample.model.Pupil
 /**
  * using version 1 because it is the first version
  */
-@Database(entities = [Pupil::class], version = 2, exportSchema = false)
+@Database(entities = [Pupil::class], version = 1, exportSchema = false)
 abstract class ManagementDatabase: RoomDatabase() {
     abstract fun pupilDao(): PupilDAO
     companion object {
